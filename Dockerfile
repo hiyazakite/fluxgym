@@ -1,53 +1,64 @@
-# Base image with CUDA 12.2
-FROM nvidia/cuda:12.2.2-base-ubuntu22.04
+# Base image with CUDA 12.6
+FROM nvidia/cuda:12.6.0-base-ubuntu22.04
 
-# Install pip if not already installed
-RUN apt-get update -y && apt-get install -y \
+# Install pip, git, and python3-venv
+RUN apt-get update -y && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:ubuntu-toolchain-r/test && \
+    apt-get update -y && \
+    apt-get install -y \
     python3-pip \
     python3-dev \
+    python3-venv \
     git \
-    build-essential  # Install dependencies for building extensions
+    build-essential \
+    gcc-11 \
+    g++-11 \
+    libstdc++6
 
-# Define environment variables for UID and GID and local timezone
-ENV PUID=${PUID:-1000}
-ENV PGID=${PGID:-1000}
+# Create Python/pip aliases
+RUN ln -s /usr/bin/python3 /usr/bin/python && \
+    ln -s /usr/bin/pip3 /usr/bin/pip
 
-# Create a group with the specified GID
-RUN groupadd -g "${PGID}" appuser
-# Create a user with the specified UID and GID
-RUN useradd -m -s /bin/sh -u "${PUID}" -g "${PGID}" appuser
-
+# Create app directory
 WORKDIR /app
 
-# Get sd-scripts from kohya-ss and install them
-RUN git clone -b sd3 https://github.com/kohya-ss/sd-scripts && \
+# Clone the repositories following the instructions
+RUN git clone https://github.com/cocktailpeanut/fluxgym.git && \
+    cd fluxgym && \
+    git clone -b sd3 https://github.com/kohya-ss/sd-scripts
+
+# Create and activate virtual environment inside fluxgym directory
+RUN cd /app/fluxgym && \
+    python -m venv env && \
+    . env/bin/activate && \
     cd sd-scripts && \
-    pip install --no-cache-dir -r ./requirements.txt
+    pip install --no-cache-dir -r requirements.txt && \
+    cd .. && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir "triton==2.2.0" && \
+    pip install --upgrade bitsandbytes==0.45.3
 
-# Install main application dependencies
-COPY ./requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r ./requirements.txt
+# Create directories and symlinks for external mounts
+RUN mkdir -p /outputs /datasets /models && \
+    cd /app/fluxgym && \
+    rm -rf outputs datasets models && \
+    ln -s /outputs outputs && \
+    ln -s /datasets datasets && \
+    ln -s /models models
 
-# Install Torch, Torchvision, and Torchaudio for CUDA 12.2
-RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu122/torch_stable.html
-
-RUN chown -R appuser:appuser /app
-
-# delete redundant requirements.txt and sd-scripts directory within the container
-RUN rm -r ./sd-scripts
-RUN rm ./requirements.txt
-
-#Run application as non-root
-USER appuser
-
-# Copy fluxgym application code
-COPY . ./fluxgym
-
+# Expose port for Gradio
 EXPOSE 7860
 
+# Set Gradio to listen on all interfaces
 ENV GRADIO_SERVER_NAME="0.0.0.0"
 
+# Set working directory
 WORKDIR /app/fluxgym
 
-# Run fluxgym Python application
-CMD ["python3", "./app.py"]
+# Set up virtual environment activation for CMD
+ENV VIRTUAL_ENV="/app/fluxgym/env"
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Run the application
+CMD ["python", "./app.py"]
