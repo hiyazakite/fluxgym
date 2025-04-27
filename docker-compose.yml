@@ -3,7 +3,6 @@ services:
   fluxgym:
     build:
       context: .
-      # change the dockerfile to Dockerfile.cuda12.4 if you are running CUDA 12.4 drivers otherwise leave as is
       dockerfile: Dockerfile
     image: fluxgym
     container_name: fluxgym
@@ -15,7 +14,10 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-      - ./:/app/fluxgym
+      # Add mounts for datasets, models, and outputs
+      - ./datasets:/app/fluxgym/datasets
+      - ./models:/app/fluxgym/models
+      - ./outputs:/app/fluxgym/outputs
     stop_signal: SIGKILL
     tty: true
     deploy:

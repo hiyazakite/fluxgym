@@ -24,9 +24,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python && \
 WORKDIR /app
 
 # Clone the repositories following the instructions
-RUN git clone https://github.com/cocktailpeanut/fluxgym.git && \
-    cd fluxgym && \
-    git clone -b sd3 https://github.com/kohya-ss/sd-scripts
+RUN git clone https://github.com/kashol/fluxgym.git --recurse-submodules
 
 # Create and activate virtual environment inside fluxgym directory
 RUN cd /app/fluxgym && \

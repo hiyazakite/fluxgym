@@ -33,3 +33,8 @@ gradio
 python-slugify
 imagesize
 pydantic==2.9.2
+
+#Change version of some packages from sd-scripts (force upgrade)
+#triton==2.2.0
+bitsandbytes==0.45.3
+
