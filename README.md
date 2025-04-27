@@ -1,9 +1,9 @@
 # Changes in this fork
 
 - SD-scripts are now being handled as git submodule, locked to specific commit to avoid dependency issues
-- Changed the dockerfile to use CUDA 12.6 (with ompatible bitsandbytes 0.45.3) and fixed known issue with missing Triton package. (https://github.com/cocktailpeanut/fluxgym/issues/388).
+- Changed the dockerfile to use CUDA 12.6 (with compatible bitsandbytes 0.45.3) and fixed known issue with missing Triton package. (https://github.com/cocktailpeanut/fluxgym/issues/388).
 - Folders such as models, datasets, and outputs can now be mounted from the host to the container.
-- User in docker container is now root (this works around permission issues with datasets, models, and outputs folders when using with UNRAID).
+- User in docker container is now root (this works around permission issues with datasets, models, and outputs folders when using this container with UNRAID).
 
 # Flux Gym
 
