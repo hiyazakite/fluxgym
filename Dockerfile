@@ -16,15 +16,15 @@ RUN apt-get update -y && \
     g++-11 \
     libstdc++6
 
-# Create Python/pip aliases
-RUN ln -s /usr/bin/python3 /usr/bin/python && \
-    ln -s /usr/bin/pip3 /usr/bin/pip
+# Create Python/pip aliases, force overwrite if they exist
+RUN ln -sf /usr/bin/python3 /usr/bin/python && \
+    ln -sf /usr/bin/pip3 /usr/bin/pip
 
 # Create app directory
 WORKDIR /app
 
 # Clone the repositories following the instructions
-RUN git clone https://github.com/kashol/fluxgym.git --recurse-submodules
+RUN git clone https://github.com/hiyazakite/fluxgym.git --recurse-submodules
 
 # Create and activate virtual environment inside fluxgym directory
 RUN cd /app/fluxgym && \
